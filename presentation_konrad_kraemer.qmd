@@ -1,0 +1,319 @@
+---
+title: "Translation of R to C++"
+author: "Konrad Krämer"
+date: "`r Sys.Date()`"
+subtitle: "The R package ast2ast"
+
+# https://quarto.org/docs/presentations/revealjs/themes.html
+format: 
+  revealjs:
+    theme: moon
+editor: visual
+twitter: yes
+---
+
+## Motivation and aim
+
+**Problem**: Using R functions which: 
+
+::: {.incremental}
+
+- <font size="5"> are called very often </font> 
+- <font size="5"> are called by C or C++: </font> 
+    * <font size="5"> expensive copying of memory from R to C/C++ and *vice versa* </font> 
+
+:::
+
+```{r, eval = TRUE, echo = FALSE}
+library(Rcpp)
+library(ast2ast)
+library(r2sundials)
+library(RcppXPtrUtils)
+library(microbenchmark)
+
+# R version
+ti <- seq(0, 5, length.out=101)
+p <- list(a = 2)
+p <- c(nu = 2, a = 1)
+y0 <- 0
+frhs <- function(t, y, p, psens) {
+  -p["nu"]*(y-p["a"])
+} 
+
+res_exp <- r2cvodes(y0, ti,
+                    frhs, param = p)
+attributes(res_exp) <- NULL
+
+# External pointer
+ptr_exp <- cppXPtr(code = '
+int rhs_exp(double t, const vec &y,
+            vec &ydot,
+            RObject &param,
+            NumericVector &psens) {
+            
+  double a = 1;
+  double nu = 2;
+  ydot[0] = -nu*(y[0] - a);
+  return(CV_SUCCESS);
+}
+',
+depends=c("RcppArmadillo",
+          "r2sundials","rmumps"),
+includes="using namespace arma;\n
+          #include <r2sundials.h>",
+cacheDir="lib", verbose=FALSE)
+
+pv <- c(a = 1)
+res_exp2 <- r2cvodes(y0, ti,
+                     ptr_exp, param = pv)
+attributes(res_exp2) <- NULL
+```
+
+```{Rcpp, eval = TRUE, echo = FALSE}
+// [[Rcpp::depends(RcppArmadillo)]]
+// [[Rcpp::depends(rmumps)]]
+// [[Rcpp::depends(r2sundials)]]
+// [[Rcpp::depends(ast2ast)]]
+// [[Rcpp::plugins("cpp17")]]
+#include "etr.hpp"
+#include "RcppArmadillo.h"
+#include "r2sundials.h"
+using namespace arma;
+using namespace Rcpp;
+
+typedef int (*fp)(double t, const vec &y,
+             vec &ydot, RObject &param,
+             NumericVector &psens);
+
+typedef void (*user_fct)(sexp& y_,
+              sexp& ydot_);
+user_fct Fct;
+
+int rhs_exp_wrapper(double t, const vec &y,
+                    vec &ydot, RObject &param,
+                    NumericVector &psens) {
+  NumericVector p(param);
+  const int size = y.size();
+  sexp ydot_(size, ydot.memptr(), 2);
+  
+  double* ptr = const_cast<double*>(
+                y.memptr());
+  sexp y_(size, ptr, 2);
+  Fct(y_, ydot_);
+  return(CV_SUCCESS);
+}
+
+
+// [[Rcpp::export]]
+NumericVector solve_ode(XPtr<user_fct> inp,
+                        NumericVector time,
+                        NumericVector y) {
+Fct = *inp;
+XPtr<fp> ptr = XPtr<fp>(new fp(
+            &rhs_exp_wrapper));
+
+Environment pkg = 
+  Environment::namespace_env("r2sundials");
+Function solve = pkg["r2cvodes"];
+NumericVector output = solve(y, time,
+                             ptr, time);
+
+return output;
+}
+```
+
+```{r, eval = TRUE, echo = FALSE}
+out <- microbenchmark(
+  r2cvodes(y0, ti,
+          frhs, param = p),
+  r2cvodes(y0, ti,
+          ptr_exp, param = pv))
+
+boxplot(out, names=c("R", "C++"))
+```
+
+
+## Motivation and aim {auto-animate=true}
+
+::: {style="margin-top: 100px;"}
+**How to solve the problem?**
+:::
+
+## Motivation and aim {auto-animate=true}
+
+::: {style="margin-top: 100px;"}
+**Solution**: Translating an R function using *ast2ast*
+:::
+
+::: {.incremental}
+
+- Optimization
+- ODE-functions
+
+:::
+
+```{r}
+# ast2ast version
+ti <- seq(0, 5, length.out=101)
+y0 <- 0
+
+library(ast2ast)
+ode <- function(y, ydot) {
+  nu <- 2
+  a <- 1
+  ydot[1] <- -nu*(y[1] - a)
+}
+pointer_to_ode <- translate(ode,
+                          reference = TRUE)
+res_exp3 <- solve_ode(pointer_to_ode,
+                      ti, y0)
+attributes(res_exp3) <- NULL
+
+stopifnot(identical(res_exp,
+                res_exp2,
+                res_exp3))
+out <- microbenchmark(
+  r2cvodes(y0, ti,
+          frhs, param = p),
+  r2cvodes(y0, ti,
+          ptr_exp, param = pv),
+  solve_ode(pointer_to_ode,
+          ti, y0))
+
+boxplot(out, names=c("R", "C++", "ast2ast"))
+```
+
+## 1. Implemention of *ETR* {auto-animate="true"}
+
+```{Rcpp, eval = TRUE, echo = FALSE}
+// [[Rcpp::depends(RcppArmadillo)]]
+// [[Rcpp::depends(ast2ast)]]
+#include "etr.hpp"
+// [[Rcpp::plugins("cpp17")]]
+
+// [[Rcpp::export]]
+void example() {
+  sexp pi = 3.14;
+  sexp vec = colon(1, 4);
+  sexp mat = matrix(5, 2, 2);
+  print(pi*vec);
+  print();
+  print(vec + vec + mat);
+}
+```
+
+- *Expression template library R (ETR)* 
+
+:::: {.columns}
+
+::: {.column width="50%"}
+```{c, eval = FALSE, echo = TRUE}
+// [[Rcpp::depends(RcppArmadillo)]]
+// [[Rcpp::depends(ast2ast)]]
+#include "etr.hpp"
+// [[Rcpp::plugins("cpp17")]]
+
+// [[Rcpp::export]]
+void example() {
+  sexp pi = 3.14;
+  sexp vec = colon(1, 4);
+  sexp mat = matrix(5, 2, 2);
+  print(pi*vec);
+  print();
+  print(vec + vec + mat);
+}
+```
+:::
+
+::: {.column width="50%"}
+```{r, echo = TRUE}
+example()
+```
+:::
+
+::::
+
+## 1. Comparison of *ETR* and R {auto-animate="true"}
+
+:::: {.columns}
+
+::: {.column width="50%"}
+```{c, eval = FALSE, echo = TRUE}
+// [[Rcpp::depends(RcppArmadillo)]]
+// [[Rcpp::depends(ast2ast)]]
+#include "etr.hpp"
+// [[Rcpp::plugins("cpp17")]]
+
+// [[Rcpp::export]]
+void example() {
+  sexp pi = 3.14;
+  sexp vec = colon(1, 4);
+  sexp mat = matrix(5, 2, 2);
+  print(pi*vec);
+  print();
+  print(vec + vec + mat);
+}
+```
+:::
+
+::: {.column width="50%"}
+```{r, echo = TRUE, eval = TRUE}
+example <- function() {
+  pi = 3.14
+  vec = 1:4
+  mat = matrix(5, 2, 2)
+  print(pi*vec)
+  cat("\n")
+  print(vec + vec + mat)
+}
+example()
+```
+:::
+
+::::
+
+::: {.incremental}
+
+- C++ and R code are very similar
+- R code is translated to C++
+
+:::
+
+
+## 2. Translation of R code {auto-animate="true"}
+
+```{r, eval = FALSE, echo = TRUE}
+a <- 1:4 - b
+```
+
+
+## 2. Translation of R code {auto-animate="true"}
+
+:::: {.columns}
+
+::: {.column width="50%"}
+```{r, echo = TRUE}
+lobstr::ast(a <- 1:4 - b)
+```
+:::
+
+::: {.column width="50%"}
+```{r, echo = TRUE}
+lobstr::ast(a <- colon(1, 4) - b)
+```
+:::
+
+::::
+
+
+
+
+## Conclusion
+
+**Thank you very much for your attention** \
+
+**Get in contact:** \
+
+- Github: <https://github.com/Konrad1991> 
+- Twitter: <https://twitter.com/kraemer_konrad>
+
