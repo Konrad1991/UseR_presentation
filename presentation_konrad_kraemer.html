@@ -3,7 +3,7 @@
   <meta charset="utf-8">
   <meta name="generator" content="quarto-0.9.80">
   <meta name="author" content="Konrad Krämer">
-  <meta name="dcterms.date" content="2022-05-27">
+  <meta name="dcterms.date" content="2022-05-28">
   <title>Translation of R to C++</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -397,7 +397,7 @@
   <h1 class="title">Translation of R to C++</h1>
   <p class="subtitle">The R package ast2ast</p>
   <p class="author">Konrad Krämer</p>
-  <p class="date">2022-05-27</p>
+  <p class="date">2022-05-28</p>
 </section>
 
 <section id="motivation-and-aim" class="slide level2">
@@ -419,7 +419,7 @@
 
 </div>
 
-<img data-src="presentation_konrad_kraemer_files/figure-revealjs/unnamed-chunk-3-1.png" width="960" class="r-stretch"></section>
+<img data-src="presentation_konrad_kraemer_files/figure-revealjs/unnamed-chunk-6-1.png" width="960" class="r-stretch"></section>
 <section id="motivation-and-aim-1" class="slide level2" data-auto-animate="true">
 <h2 data-id="quarto-animate-title">Motivation and aim</h2>
 <div style="margin-top: 100px;">
@@ -438,7 +438,7 @@
 </ul>
 </div>
 
-<img data-src="presentation_konrad_kraemer_files/figure-revealjs/unnamed-chunk-4-1.png" width="960" class="r-stretch"></section>
+<img data-src="presentation_konrad_kraemer_files/figure-revealjs/unnamed-chunk-8-1.png" width="960" class="r-stretch"></section>
 <section id="implemention-of-etr" class="slide level2" data-auto-animate="true">
 <h2 data-id="quarto-animate-title">1. Implemention of <em>ETR</em></h2>
 <div class="cell">
@@ -529,42 +529,146 @@
 </ul>
 </div>
 </section>
-<section id="translation-of-r-code" class="slide level2" data-auto-animate="true">
-<h2 data-id="quarto-animate-title">2. Translation of R code</h2>
+<section id="translation-of-r-code" class="slide level2">
+<h2>2. Translation of R code</h2>
 <div class="cell">
-<div class="sourceCode" id="cb7"><pre class="sourceCode numberSource r cell-code number-lines code-with-copy" data-id="quarto-animate-code"><code class="sourceCode r hljs"><span id="cb7-1" class="hljs-ln-code"><a href="#cb7-1"></a>a <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">4</span> <span class="sc">-</span> b</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode numberSource r cell-code number-lines code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a><span class="dv">1</span><span class="sc">:</span><span class="dv">4</span> <span class="sc">+</span> a[<span class="dv">1</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
-<section id="translation-of-r-code-1" class="slide level2" data-auto-animate="true">
-<h2 data-id="quarto-animate-title">2. Translation of R code</h2>
+<section id="translation-of-r-code-1" class="slide level2">
+<h2>2. Translation of R code</h2>
 <div class="columns">
 <div class="column" style="width:50%;">
 <div class="cell">
-<div class="sourceCode" id="cb8"><pre class="sourceCode numberSource r cell-code number-lines code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1"></a>lobstr<span class="sc">::</span><span class="fu">ast</span>(a <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">4</span> <span class="sc">-</span> b)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode numberSource r cell-code number-lines code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1"></a><span class="fu">library</span>(lobstr)</span>
+<span id="cb8-2"><a href="#cb8-2"></a><span class="fu">ast</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">4</span> <span class="sc">+</span> a[<span class="dv">1</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-stdout">
-<pre><code>█─`&lt;-` 
-├─a 
-└─█─`-` 
-  ├─█─`:` 
-  │ ├─1 
-  │ └─4 
-  └─b </code></pre>
+<pre><code>█─`+` 
+├─█─`:` 
+│ ├─1 
+│ └─4 
+└─█─`[` 
+  ├─a 
+  └─1 </code></pre>
 </div>
 </div>
 </div><div class="column" style="width:50%;">
 <div class="cell">
-<div class="sourceCode" id="cb10"><pre class="sourceCode numberSource r cell-code number-lines code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1"></a>lobstr<span class="sc">::</span><span class="fu">ast</span>(a <span class="ot">&lt;-</span> <span class="fu">colon</span>(<span class="dv">1</span>, <span class="dv">4</span>) <span class="sc">-</span> b)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb10"><pre class="sourceCode numberSource r cell-code number-lines code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1"></a><span class="fu">library</span>(lobstr)</span>
+<span id="cb10-2"><a href="#cb10-2"></a><span class="fu">ast</span>(<span class="fu">colon</span>(<span class="dv">1</span>, <span class="dv">4</span>) <span class="sc">+</span> <span class="fu">subset</span>(a, <span class="dv">1</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-stdout">
-<pre><code>█─`&lt;-` 
-├─a 
-└─█─`-` 
-  ├─█─colon 
-  │ ├─1 
-  │ └─4 
-  └─b </code></pre>
+<pre><code>█─`+` 
+├─█─colon 
+│ ├─1 
+│ └─4 
+└─█─subset 
+  ├─a 
+  └─1 </code></pre>
 </div>
 </div>
 </div>
+</div>
+</section>
+<section id="example" class="slide level2">
+<h2>Example</h2>
+<div class="columns">
+<div class="column" style="width:50%;">
+<div class="cell">
+<div class="sourceCode" id="cb12"><pre class="sourceCode numberSource r cell-code number-lines code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1"></a><span class="fu">library</span>(ast2ast)</span>
+<span id="cb12-2"><a href="#cb12-2"></a>fibonacci <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<span id="cb12-3"><a href="#cb12-3"></a>  v <span class="ot">&lt;-</span> <span class="fu">vector</span>(<span class="dv">6</span>)</span>
+<span id="cb12-4"><a href="#cb12-4"></a>  v[<span class="dv">1</span>] <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb12-5"><a href="#cb12-5"></a>  v[<span class="dv">2</span>] <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb12-6"><a href="#cb12-6"></a>  </span>
+<span id="cb12-7"><a href="#cb12-7"></a>  <span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">3</span><span class="sc">:</span><span class="fu">length</span>(v)) {</span>
+<span id="cb12-8"><a href="#cb12-8"></a>    v[i] <span class="ot">&lt;-</span> v[i <span class="sc">-</span> <span class="dv">1</span>] <span class="sc">+</span> v[i <span class="sc">-</span> <span class="dv">2</span>]</span>
+<span id="cb12-9"><a href="#cb12-9"></a>    <span class="fu">print</span>(v[i])</span>
+<span id="cb12-10"><a href="#cb12-10"></a>  }</span>
+<span id="cb12-11"><a href="#cb12-11"></a></span>
+<span id="cb12-12"><a href="#cb12-12"></a>}</span>
+<span id="cb12-13"><a href="#cb12-13"></a>cpp_fct <span class="ot">&lt;-</span> <span class="fu">translate</span>(fibonacci)</span>
+<span id="cb12-14"><a href="#cb12-14"></a></span>
+<span id="cb12-15"><a href="#cb12-15"></a>Rcpp<span class="sc">::</span><span class="fu">sourceCpp</span>(<span class="at">code =</span> <span class="st">"</span></span>
+<span id="cb12-16"><a href="#cb12-16"></a><span class="st">#include &lt;Rcpp.h&gt;</span></span>
+<span id="cb12-17"><a href="#cb12-17"></a><span class="st">typedef void (*fp)();</span></span>
+<span id="cb12-18"><a href="#cb12-18"></a><span class="st">// [[Rcpp::export]]</span></span>
+<span id="cb12-19"><a href="#cb12-19"></a><span class="st">void call_fct(Rcpp::XPtr&lt;fp&gt; inp) {</span></span>
+<span id="cb12-20"><a href="#cb12-20"></a><span class="st">  fp f = *inp;</span></span>
+<span id="cb12-21"><a href="#cb12-21"></a><span class="st">  f();</span></span>
+<span id="cb12-22"><a href="#cb12-22"></a><span class="st">}</span></span>
+<span id="cb12-23"><a href="#cb12-23"></a><span class="st">"</span>)</span>
+<span id="cb12-24"><a href="#cb12-24"></a><span class="fu">call_fct</span>(cpp_fct)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-stdout">
+<pre><code>2
+3
+5
+8</code></pre>
+</div>
+</div>
+</div><div class="column" style="width:50%;">
+<div class="cell">
+<div class="sourceCode" id="cb14"><pre class="sourceCode numberSource c cell-code number-lines code-with-copy"><code class="sourceCode c"><span id="cb14-1"><a href="#cb14-1"></a><span class="dt">void</span> f<span class="op">()</span> <span class="op">{</span></span>
+<span id="cb14-2"><a href="#cb14-2"></a>sexp v<span class="op">;</span></span>
+<span id="cb14-3"><a href="#cb14-3"></a>v <span class="op">=</span> vector<span class="op">(</span>i2d<span class="op">(</span><span class="dv">6</span><span class="op">));</span></span>
+<span id="cb14-4"><a href="#cb14-4"></a>subassign<span class="op">(</span>v<span class="op">,</span> <span class="dv">1</span><span class="op">)</span> <span class="op">=</span> i2d<span class="op">(</span><span class="dv">1</span><span class="op">);</span></span>
+<span id="cb14-5"><a href="#cb14-5"></a>subassign<span class="op">(</span>v<span class="op">,</span> <span class="dv">2</span><span class="op">)</span> <span class="op">=</span> i2d<span class="op">(</span><span class="dv">1</span><span class="op">);</span></span>
+<span id="cb14-6"><a href="#cb14-6"></a></span>
+<span id="cb14-7"><a href="#cb14-7"></a><span class="cf">for</span><span class="op">(</span><span class="dt">auto</span><span class="op">&amp;</span>i<span class="op">:</span>  colon<span class="op">(</span>i2d<span class="op">(</span><span class="dv">3</span><span class="op">),</span> length<span class="op">(</span>v<span class="op">)))</span> <span class="op">{</span></span>
+<span id="cb14-8"><a href="#cb14-8"></a>subassign<span class="op">(</span>v<span class="op">,</span> i<span class="op">)</span> <span class="op">=</span> </span>
+<span id="cb14-9"><a href="#cb14-9"></a>  subset<span class="op">(</span>v<span class="op">,</span> i <span class="op">-</span> i2d<span class="op">(</span><span class="dv">1</span><span class="op">))</span></span>
+<span id="cb14-10"><a href="#cb14-10"></a>  <span class="op">+</span> subset<span class="op">(</span>v<span class="op">,</span> i <span class="op">-</span> i2d<span class="op">(</span><span class="dv">2</span><span class="op">));</span></span>
+<span id="cb14-11"><a href="#cb14-11"></a>etr<span class="op">::</span>print<span class="op">(</span>subset<span class="op">(</span>v<span class="op">,</span> i<span class="op">));</span></span>
+<span id="cb14-12"><a href="#cb14-12"></a><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="interface-with-rcpp" class="slide level2">
+<h2>Interface with Rcpp</h2>
+<div class="cell">
+<div class="sourceCode" id="cb15"><pre class="sourceCode numberSource cpp cell-code number-lines code-with-copy"><code class="sourceCode cpp"><span id="cb15-1"><a href="#cb15-1"></a><span class="co">// Rcpp to sexp</span></span>
+<span id="cb15-2"><a href="#cb15-2"></a>NumericVector a<span class="op">{</span><span class="dv">1</span><span class="op">,</span> <span class="dv">2</span><span class="op">};</span></span>
+<span id="cb15-3"><a href="#cb15-3"></a>sexp <span class="va">a_</span><span class="op">;</span> <span class="co">// sexp a_ = a; Error!</span></span>
+<span id="cb15-4"><a href="#cb15-4"></a><span class="va">a_</span> <span class="op">=</span> a<span class="op">;</span></span>
+<span id="cb15-5"><a href="#cb15-5"></a>print<span class="op">(</span><span class="va">a_</span><span class="op">);</span></span>
+<span id="cb15-6"><a href="#cb15-6"></a>  </span>
+<span id="cb15-7"><a href="#cb15-7"></a><span class="co">// sexp to Rcpp</span></span>
+<span id="cb15-8"><a href="#cb15-8"></a>sexp <span class="va">b_</span> <span class="op">=</span> coca<span class="op">(</span><span class="dv">3</span><span class="op">,</span> <span class="dv">4</span><span class="op">);</span></span>
+<span id="cb15-9"><a href="#cb15-9"></a>NumericVector b <span class="op">=</span> <span class="va">b_</span><span class="op">;</span></span>
+<span id="cb15-10"><a href="#cb15-10"></a>Rcpp<span class="op">::</span>Rcout <span class="op">&lt;&lt;</span> b <span class="op">&lt;&lt;</span> <span class="bu">std::</span>endl<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="pointer-interface" class="title-slide slide level1 center">
+<h1>Pointer interface</h1>
+<p><strong>Copy memory</strong></p>
+<div class="cell">
+<div class="sourceCode" id="cb16"><pre class="sourceCode numberSource cpp cell-code number-lines code-with-copy"><code class="sourceCode cpp"><span id="cb16-1"><a href="#cb16-1"></a><span class="dt">double</span><span class="op">*</span> ptr<span class="op">;</span></span>
+<span id="cb16-2"><a href="#cb16-2"></a>ptr <span class="op">=</span> <span class="kw">new</span> <span class="dt">double</span><span class="op">[</span>size<span class="op">];</span></span>
+<span id="cb16-3"><a href="#cb16-3"></a><span class="dt">int</span> cob <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb16-4"><a href="#cb16-4"></a>sexp a<span class="op">(</span>size<span class="op">,</span> ptr<span class="op">,</span> <span class="dv">0</span><span class="op">);</span> </span>
+<span id="cb16-5"><a href="#cb16-5"></a><span class="kw">delete</span> <span class="op">[]</span> ptr<span class="op">;</span></span>
+<span id="cb16-6"><a href="#cb16-6"></a>a <span class="op">=</span> vector<span class="op">(</span><span class="fl">3.14</span><span class="op">,</span> <span class="dv">5</span><span class="op">);</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p><strong>Take Ownership</strong></p>
+<div class="cell">
+<div class="sourceCode" id="cb17"><pre class="sourceCode numberSource cpp cell-code number-lines code-with-copy"><code class="sourceCode cpp"><span id="cb17-1"><a href="#cb17-1"></a><span class="dt">double</span><span class="op">*</span> ptr<span class="op">;</span></span>
+<span id="cb17-2"><a href="#cb17-2"></a>ptr <span class="op">=</span> <span class="kw">new</span> <span class="dt">double</span><span class="op">[</span>size<span class="op">];</span></span>
+<span id="cb17-3"><a href="#cb17-3"></a>sexp b<span class="op">(</span>size<span class="op">,</span> ptr<span class="op">,</span> <span class="dv">1</span><span class="op">);</span> </span>
+<span id="cb17-4"><a href="#cb17-4"></a>b <span class="op">=</span> vector<span class="op">(</span><span class="dv">5</span><span class="op">,</span> <span class="dv">3</span><span class="op">);</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+
+<section>
+<section id="pointer-interface-1" class="title-slide slide level1 center">
+<h1>Pointer interface</h1>
+<p><strong>borrow ownership</strong></p>
+<div class="cell">
+<div class="sourceCode" id="cb18"><pre class="sourceCode numberSource cpp cell-code number-lines code-with-copy"><code class="sourceCode cpp"><span id="cb18-1"><a href="#cb18-1"></a><span class="dt">double</span><span class="op">*</span> ptr<span class="op">;</span></span>
+<span id="cb18-2"><a href="#cb18-2"></a>ptr <span class="op">=</span> <span class="kw">new</span> <span class="dt">double</span><span class="op">[</span>size<span class="op">];</span></span>
+<span id="cb18-3"><a href="#cb18-3"></a>sexp c<span class="op">(</span>size<span class="op">,</span> ptr<span class="op">,</span> <span class="dv">2</span><span class="op">);</span> </span>
+<span id="cb18-4"><a href="#cb18-4"></a><span class="co">//c = vector(5, size + 1); //error calls resize</span></span>
+<span id="cb18-5"><a href="#cb18-5"></a>c <span class="op">=</span> vector<span class="op">(</span><span class="dv">4</span><span class="op">,</span> size<span class="op">);</span></span>
+<span id="cb18-6"><a href="#cb18-6"></a><span class="kw">delete</span><span class="op">[]</span> ptr<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="conclusion" class="slide level2">
@@ -580,7 +684,7 @@
 <div class="footer footer-default">
 
 </div>
-</section>
+</section></section>
     </div>
   </div>
 

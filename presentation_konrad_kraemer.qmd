@@ -14,14 +14,12 @@ twitter: yes
 
 ## Motivation and aim
 
-**Problem**: Using R functions which: 
+**Problem**: Using R functions which:
 
-::: {.incremental}
-
-- <font size="5"> are called very often </font> 
-- <font size="5"> are called by C or C++: </font> 
-    * <font size="5"> expensive copying of memory from R to C/C++ and *vice versa* </font> 
-
+::: incremental
+-   <font size="5"> are called very often </font>
+-   <font size="5"> are called by C or C++: </font>
+    -   <font size="5"> expensive copying of memory from R to C/C++ and *vice versa* </font>
 :::
 
 ```{r, eval = TRUE, echo = FALSE}
@@ -132,24 +130,21 @@ out <- microbenchmark(
 boxplot(out, names=c("R", "C++"))
 ```
 
-
-## Motivation and aim {auto-animate=true}
+## Motivation and aim {auto-animate="true"}
 
 ::: {style="margin-top: 100px;"}
 **How to solve the problem?**
 :::
 
-## Motivation and aim {auto-animate=true}
+## Motivation and aim {auto-animate="true"}
 
 ::: {style="margin-top: 100px;"}
 **Solution**: Translating an R function using *ast2ast*
 :::
 
-::: {.incremental}
-
-- Optimization
-- ODE-functions
-
+::: incremental
+-   Optimization
+-   ODE-functions
 :::
 
 ```{r}
@@ -202,10 +197,9 @@ void example() {
 }
 ```
 
-- *Expression template library R (ETR)* 
+-   *Expression template library R (ETR)*
 
-:::: {.columns}
-
+::: columns
 ::: {.column width="50%"}
 ```{c, eval = FALSE, echo = TRUE}
 // [[Rcpp::depends(RcppArmadillo)]]
@@ -230,13 +224,11 @@ void example() {
 example()
 ```
 :::
-
-::::
+:::
 
 ## 1. Comparison of *ETR* and R {auto-animate="true"}
 
-:::: {.columns}
-
+::: columns
 ::: {.column width="50%"}
 ```{c, eval = FALSE, echo = TRUE}
 // [[Rcpp::depends(RcppArmadillo)]]
@@ -269,51 +261,151 @@ example <- function() {
 example()
 ```
 :::
-
-::::
-
-::: {.incremental}
-
-- C++ and R code are very similar
-- R code is translated to C++
-
 :::
 
+::: incremental
+-   C++ and R code are very similar
+-   R code is translated to C++
+:::
 
-## 2. Translation of R code {auto-animate="true"}
+## 2. Translation of R code 
 
 ```{r, eval = FALSE, echo = TRUE}
-a <- 1:4 - b
+1:4 + a[1]
 ```
 
+## 2. Translation of R code 
 
-## 2. Translation of R code {auto-animate="true"}
-
-:::: {.columns}
-
+::: columns
 ::: {.column width="50%"}
 ```{r, echo = TRUE}
-lobstr::ast(a <- 1:4 - b)
+library(lobstr)
+ast(1:4 + a[1])
 ```
 :::
 
 ::: {.column width="50%"}
 ```{r, echo = TRUE}
-lobstr::ast(a <- colon(1, 4) - b)
+library(lobstr)
+ast(colon(1, 4) + subset(a, 1))
+```
+:::
+:::
+
+## Example
+
+
+::: columns
+::: {.column width="50%"}
+```{r, echo = TRUE, eval = TRUE}
+library(ast2ast)
+fibonacci <- function() {
+  v <- vector(6)
+  v[1] <- 1
+  v[2] <- 1
+  
+  for(i in 3:length(v)) {
+    v[i] <- v[i - 1] + v[i - 2]
+    print(v[i])
+  }
+
+}
+cpp_fct <- translate(fibonacci)
+
+Rcpp::sourceCpp(code = "
+#include <Rcpp.h>
+typedef void (*fp)();
+// [[Rcpp::export]]
+void call_fct(Rcpp::XPtr<fp> inp) {
+  fp f = *inp;
+  f();
+}
+")
+call_fct(cpp_fct)
 ```
 :::
 
-::::
+::: {.column width="50%"}
+\tiny
+```{c, eval = FALSE, echo = TRUE}
+void f() {
+sexp v;
+v = vector(i2d(6));
+subassign(v, 1) = i2d(1);
+subassign(v, 2) = i2d(1);
+
+for(auto&i:  colon(i2d(3), length(v))) {
+subassign(v, i) = 
+  subset(v, i - i2d(1))
+  + subset(v, i - i2d(2));
+etr::print(subset(v, i));
+}
 
 
+```
+\normalsize
+:::
+:::
+
+
+
+
+## Interface with Rcpp 
+
+```{Rcpp, eval = FALSE, echo = TRUE}
+// Rcpp to sexp
+NumericVector a{1, 2};
+sexp a_; // sexp a_ = a; Error!
+a_ = a;
+print(a_);
+  
+// sexp to Rcpp
+sexp b_ = coca(3, 4);
+NumericVector b = b_;
+Rcpp::Rcout << b << std::endl;
+```
+
+# Pointer interface
+
+**Copy memory**
+
+```{Rcpp, eval = FALSE, echo = TRUE}
+double* ptr;
+ptr = new double[size];
+int cob = 0;
+sexp a(size, ptr, 0); 
+delete [] ptr;
+a = vector(3.14, 5);
+```
+
+**Take Ownership**
+
+```{Rcpp, eval = FALSE, echo = TRUE}
+double* ptr;
+ptr = new double[size];
+sexp b(size, ptr, 1); 
+b = vector(5, 3);
+```
+
+# Pointer interface
+
+**borrow ownership**
+
+```{Rcpp, eval = FALSE, echo = TRUE}
+double* ptr;
+ptr = new double[size];
+sexp c(size, ptr, 2); 
+//c = vector(5, size + 1); //error calls resize
+c = vector(4, size);
+delete[] ptr;
+```
 
 
 ## Conclusion
 
-**Thank you very much for your attention** \
+**Thank you very much for your attention**\
 
-**Get in contact:** \
+**Get in contact:**\
 
-- Github: <https://github.com/Konrad1991> 
-- Twitter: <https://twitter.com/kraemer_konrad>
-
+-   Github: <https://github.com/Konrad1991>
+-   Twitter: <https://twitter.com/kraemer_konrad>
