@@ -3,16 +3,18 @@ title: "Translation of R to C++"
 author: "Konrad Krämer"
 date: "`r Sys.Date()`"
 subtitle: "The R package ast2ast"
-
 # https://quarto.org/docs/presentations/revealjs/themes.html
 format: 
   revealjs:
     theme: moon
-editor: visual
+    slide-number: true
+    navigation-mode: vertical
+    show-slide-number: print
+#editor: visual
 twitter: yes
 ---
 
-## Motivation and aim
+## Motivation and aim 
 
 **Problem**: Using R functions which:
 
@@ -130,13 +132,13 @@ out <- microbenchmark(
 boxplot(out, names=c("R", "C++"))
 ```
 
-## Motivation and aim {auto-animate="true"}
+## Motivation and aim {auto-animate="true"} 
 
 ::: {style="margin-top: 100px;"}
 **How to solve the problem?**
 :::
 
-## Motivation and aim {auto-animate="true"}
+## Motivation and aim {auto-animate="true"} 
 
 ::: {style="margin-top: 100px;"}
 **Solution**: Translating an R function using *ast2ast*
