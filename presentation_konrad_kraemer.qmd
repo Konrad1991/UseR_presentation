@@ -268,13 +268,13 @@ example()
 -   R code is translated to C++
 :::
 
-## 2. Translation of R code 
+## 2. Translation of R code
 
 ```{r, eval = FALSE, echo = TRUE}
 1:4 + a[1]
 ```
 
-## 2. Translation of R code 
+## 2. Translation of R code
 
 ::: columns
 ::: {.column width="50%"}
@@ -294,7 +294,6 @@ ast(colon(1, 4) + subset(a, 1))
 
 ## Example
 
-
 ::: columns
 ::: {.column width="50%"}
 ```{r, echo = TRUE, eval = TRUE}
@@ -308,25 +307,18 @@ fibonacci <- function() {
     v[i] <- v[i - 1] + v[i - 2]
     print(v[i])
   }
-
+  
 }
-cpp_fct <- translate(fibonacci)
-
-Rcpp::sourceCpp(code = "
-#include <Rcpp.h>
-typedef void (*fp)();
-// [[Rcpp::export]]
-void call_fct(Rcpp::XPtr<fp> inp) {
-  fp f = *inp;
-  f();
-}
-")
-call_fct(cpp_fct)
+sourceCpp_out <- 
+  translate(fibonacci,
+            R_fct = TRUE) 
+f()
 ```
 :::
 
 ::: {.column width="50%"}
 \tiny
+
 ```{c, eval = FALSE, echo = TRUE}
 void f() {
 sexp v;
@@ -343,14 +335,12 @@ etr::print(subset(v, i));
 
 
 ```
+
 \normalsize
 :::
 :::
 
-
-
-
-## Interface with Rcpp 
+## Interface with Rcpp
 
 ```{Rcpp, eval = FALSE, echo = TRUE}
 // Rcpp to sexp
@@ -399,7 +389,6 @@ sexp c(size, ptr, 2);
 c = vector(4, size);
 delete[] ptr;
 ```
-
 
 ## Conclusion
 
